@@ -2,37 +2,38 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = 'venv'
+        VENV_DIR = "${env.WORKSPACE}/venv"
+        PATH = "${env.WORKSPACE}/venv/bin:${env.PATH}"
     }
 
     stages {
-        stage('Setup Python Env') {
+        stage('Setup Python Environment') {
             steps {
                 sh '''
                     python3 -m venv $VENV_DIR
                     . $VENV_DIR/bin/activate
                     pip install --upgrade pip
-                    pip install black isort flake8 pre-commit pytest
+                    pip install black isort flake8 pytest pre-commit
                 '''
             }
         }
 
-        stage('Code Format Check') {
+        stage('Format Code') {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
+                    black .
                     black --check .
+                '''
+            }
+        }
+
+        stage('Code Quality Checks') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
                     isort --check-only .
                     flake8 .
-                '''
-            }
-        }
-
-        stage('Pre-commit Hooks') {
-            steps {
-                sh '''
-                    . $VENV_DIR/bin/activate
-                    pre-commit run --all-files
                 '''
             }
         }
@@ -45,14 +46,24 @@ pipeline {
                 '''
             }
         }
+
+        stage('Run Pre-commit Hooks') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pre-commit run --all-files
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo "✅ Build e testes finalizados com sucesso!"
+            echo '✅ Build and tests passed successfully!'
         }
         failure {
-            echo "❌ Falha na build ou testes!"
+            echo '❌ Build or tests failed!'
+            // Optionally notify GitHub or send alerts here
         }
     }
 }
