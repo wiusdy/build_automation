@@ -29,6 +29,16 @@ pipeline {
             }
         }
 
+        stage('Run mypy') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    cd $WORKSPACE
+                    mypy --config-file mypy.ini src/
+                '''
+            }
+        }
+
         stage('Run Tests') {
             steps {
                 sh '''
