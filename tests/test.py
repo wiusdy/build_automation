@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.data_loading.loader import get_user_by_id
+from data_loading.loader import get_user_by_id
 
 
 def test_get_user_by_id_success():
