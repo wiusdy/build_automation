@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VENV_DIR = "${WORKSPACE}/venv"
-        PYTHONPATH = "${WORKSPACE}/"
+        PYTHONPATH = "${WORKSPACE}/src"
     }
 
     stages {
@@ -24,6 +24,7 @@ pipeline {
                 sh '''
                     . $VENV_DIR/bin/activate
                     git config --unset-all core.hooksPath || true
+                    pre-commit install
                     pre-commit run --all-files
                 '''
             }
@@ -33,8 +34,8 @@ pipeline {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
-                    cd $WORKSPACE
-                    mypy --config-file mypy.ini .
+                    cd src
+                    mypy --config-file ../mypy.ini .
                 '''
             }
         }
@@ -53,11 +54,9 @@ pipeline {
         always {
             echo '🧹 Finalizando build...'
         }
-
         success {
             echo '✅ Build finalizado com sucesso!'
         }
-
         failure {
             echo '❌ Build ou testes falharam!'
         }
