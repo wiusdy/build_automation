@@ -2,88 +2,57 @@ pipeline {
     agent any
 
     environment {
-        // Ajuste o caminho do Python se precisar
-        PYTHON_BIN = 'python3'
         VENV_DIR = 'venv'
     }
 
     stages {
-        stage('Setup Python Environment') {
+        stage('Setup Python Env') {
             steps {
-                script {
-                    // Cria e ativa venv
-                    sh '''
-                        if [ ! -d "$VENV_DIR" ]; then
-                            $PYTHON_BIN -m venv $VENV_DIR
-                        fi
-                        source $VENV_DIR/bin/activate
-                        pip install --upgrade pip
-                        pip install black pre-commit pytest
-                    '''
-                }
+                sh '''
+                    python3 -m venv $VENV_DIR
+                    . $VENV_DIR/bin/activate
+                    pip install --upgrade pip
+                    pip install black isort flake8 pre-commit pytest
+                '''
             }
         }
 
-        stage('Run Black') {
+        stage('Code Format Check') {
             steps {
-                script {
-                    // Rodar black formatando os arquivos (sem --check pra evitar erro)
-                    sh '''
-                        source $VENV_DIR/bin/activate
-                        black .
-                    '''
-                }
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    black --check .
+                    isort --check-only .
+                    flake8 .
+                '''
             }
         }
 
-        stage('Run Pre-commit') {
+        stage('Pre-commit Hooks') {
             steps {
-                script {
-                    sh '''
-                        source $VENV_DIR/bin/activate
-                        pre-commit run --all-files
-                    '''
-                }
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pre-commit run --all-files
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                script {
-                    // Roda pytest, ignora erro se não encontrar testes (exit code 5)
-                    def pytestStatus = sh(
-                        script: '''
-                            source $VENV_DIR/bin/activate
-                            pytest || echo $? > pytest_status.txt
-                        ''',
-                        returnStatus: true
-                    )
-                    // Read the status code if exists
-                    def exitCode = 0
-                    if (fileExists('pytest_status.txt')) {
-                        exitCode = readFile('pytest_status.txt').trim().toInteger()
-                    }
-
-                    if (exitCode == 5) {
-                        echo "⚠️ Pytest não encontrou testes. Ignorando erro."
-                    } else if (pytestStatus != 0) {
-                        error("❌ Testes falharam com código ${pytestStatus}")
-                    } else {
-                        echo "✅ Testes executados com sucesso."
-                    }
-                }
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pytest
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "🎉 Build finalizada com sucesso!"
-            // Aqui você pode colocar notificações adicionais
+            echo "✅ Build e testes finalizados com sucesso!"
         }
         failure {
-            echo "❌ Falha na build."
-            // Notificações de falha, se precisar
+            echo "❌ Falha na build ou testes!"
         }
     }
 }
