@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    // Pode definir variáveis globais aqui, se necessário
+    BUILD_TYPE = "PR"
   }
 
   stages {
