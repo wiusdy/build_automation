@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     . $VENV_DIR/bin/activate
                     cd $WORKSPACE
-                    mypy --config-file mypy.ini src/
+                    mypy --config-file mypy.ini .
                 '''
             }
         }
