@@ -12,6 +12,7 @@ pipeline {
 
     stage('Executa build.sh') {
       steps {
+        sh 'chmod +x build.sh'
         sh '. venv/bin/activate && ./build.sh'
       }
     }
