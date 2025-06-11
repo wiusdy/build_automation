@@ -2,38 +2,56 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = "${env.WORKSPACE}/venv"
-        PATH = "${env.WORKSPACE}/venv/bin:${env.PATH}"
+        VENV_DIR = "venv"
     }
 
     stages {
-        stage('Setup Python Environment') {
+        stage('Setup Python') {
             steps {
-                sh '''
-                    python3 -m venv $VENV_DIR
-                    . $VENV_DIR/bin/activate
-                    pip install --upgrade pip
-                    pip install black isort flake8 pytest pre-commit
-                '''
+                script {
+                    // Criar e ativar venv
+                    sh '''
+                        python3 -m venv $VENV_DIR
+                        . $VENV_DIR/bin/activate
+                        pip install --upgrade pip
+                        pip install black isort flake8 pytest pre-commit
+                    '''
+                }
             }
         }
 
-        stage('Format Code') {
+        stage('Run Black') {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
-                    black .
                     black --check .
                 '''
             }
         }
 
-        stage('Code Quality Checks') {
+        stage('Run isort') {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
-                    isort --check-only .
-                    flake8 .
+                    isort --check-only --skip $VENV_DIR .
+                '''
+            }
+        }
+
+        stage('Run Flake8') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    flake8 --exclude=$VENV_DIR .
+                '''
+            }
+        }
+
+        stage('Run pre-commit hooks') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pre-commit run --all-files
                 '''
             }
         }
@@ -46,24 +64,14 @@ pipeline {
                 '''
             }
         }
-
-        stage('Run Pre-commit Hooks') {
-            steps {
-                sh '''
-                    . $VENV_DIR/bin/activate
-                    pre-commit run --all-files
-                '''
-            }
-        }
     }
 
     post {
         success {
-            echo '✅ Build and tests passed successfully!'
+            echo '✅ Build and tests succeeded!'
         }
         failure {
             echo '❌ Build or tests failed!'
-            // Optionally notify GitHub or send alerts here
         }
     }
 }
