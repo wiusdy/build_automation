@@ -2,27 +2,28 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = 'venv'
-        PYTHONPATH = 'src'
+        VENV_DIR = "${WORKSPACE}/venv"
+        PYTHONPATH = "${WORKSPACE}/src"
     }
 
     stages {
-        stage('Setup Python') {
+        stage('Setup') {
             steps {
                 sh '''
                     python3 -m venv $VENV_DIR
                     . $VENV_DIR/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements-dev.txt
-                    pip install pre-commit mypy black isort flake8 pytest
+                    pip install pre-commit
                 '''
             }
         }
 
-        stage('Run Pre-commit Hooks') {
+        stage('Pre-commit Hooks') {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
+                    pre-commit install
                     pre-commit run --all-files
                 '''
             }
@@ -32,8 +33,7 @@ pipeline {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
-                    export PYTHONPATH=$PYTHONPATH
-                    mypy src --config-file mypy.ini
+                    mypy src/
                 '''
             }
         }
@@ -49,11 +49,16 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ Build and tests passed!'
+        always {
+            echo '🧹 Finalizando build...'
         }
+
+        success {
+            echo '✅ Build finalizado com sucesso!'
+        }
+
         failure {
-            echo '❌ Build or tests failed!'
+            echo '❌ Build ou testes falharam!'
         }
     }
 }
