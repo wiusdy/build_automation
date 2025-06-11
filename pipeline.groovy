@@ -1,16 +1,16 @@
 pipeline {
-  agent { label 'build_automation_node' }
-
+  agent any
   stages {
     stage('Build') {
       steps {
-        echo "Build for PR branch: ${env.BRANCH_NAME}"
+        echo 'Compilando...'
       }
     }
-    stage('Test') {
-      steps {
-        echo "Running tests..."
-      }
+  }
+
+  post {
+    success {
+      echo 'Sucesso!'
     }
   }
 }
