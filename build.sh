@@ -1,8 +1,8 @@
 #!/bin/bash
-set -e  # Para o script em caso de erro
+set -e
 
-echo "🔍 Rodando black..."
-black --check .
+echo "🔧 Formatando código com black..."
+black .
 
 echo "🧪 Rodando testes..."
 pytest
