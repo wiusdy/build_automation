@@ -2,56 +2,38 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = "venv"
+        VENV_DIR = 'venv'
+        PYTHONPATH = 'src'
     }
 
     stages {
         stage('Setup Python') {
             steps {
-                script {
-                    // Criar e ativar venv
-                    sh '''
-                        python3 -m venv $VENV_DIR
-                        . $VENV_DIR/bin/activate
-                        pip install --upgrade pip
-                        pip install black isort flake8 pytest pre-commit
-                    '''
-                }
-            }
-        }
-
-        stage('Run Black') {
-            steps {
                 sh '''
+                    python3 -m venv $VENV_DIR
                     . $VENV_DIR/bin/activate
-                    black --check .
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install pre-commit mypy black isort flake8 pytest
                 '''
             }
         }
 
-        stage('Run isort') {
-            steps {
-                sh '''
-                    . $VENV_DIR/bin/activate
-                    isort --check-only --skip $VENV_DIR .
-                '''
-            }
-        }
-
-        stage('Run Flake8') {
-            steps {
-                sh '''
-                    . $VENV_DIR/bin/activate
-                    flake8 --exclude=$VENV_DIR .
-                '''
-            }
-        }
-
-        stage('Run pre-commit hooks') {
+        stage('Run Pre-commit Hooks') {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
                     pre-commit run --all-files
+                '''
+            }
+        }
+
+        stage('Run mypy') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    export PYTHONPATH=$PYTHONPATH
+                    mypy src --config-file mypy.ini
                 '''
             }
         }
@@ -68,7 +50,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Build and tests succeeded!'
+            echo '✅ Build and tests passed!'
         }
         failure {
             echo '❌ Build or tests failed!'
