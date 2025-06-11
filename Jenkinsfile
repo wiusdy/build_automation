@@ -59,3 +59,4 @@ pipeline {
       echo '✅ Build finalizado com sucesso!'
     }
     failure {
+    }
