@@ -24,7 +24,6 @@ pipeline {
                 sh '''
                     . $VENV_DIR/bin/activate
                     git config --unset-all core.hooksPath || true
-                    pre-commit install
                     pre-commit run --all-files
                 '''
             }
@@ -34,7 +33,8 @@ pipeline {
             steps {
                 sh '''
                     . $VENV_DIR/bin/activate
-                    mypy src/
+                    cd $WORKSPACE
+                    mypy --config-file mypy.ini src/
                 '''
             }
         }
