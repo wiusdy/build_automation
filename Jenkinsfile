@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VENV_DIR = "${WORKSPACE}/venv"
-        PYTHONPATH = "${WORKSPACE}/src"
+        PYTHONPATH = "${WORKSPACE}/"
     }
 
     stages {
