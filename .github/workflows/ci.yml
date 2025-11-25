@@ -42,14 +42,32 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           pytest -q
 
+      - name: Generate Image Tag
+        run: |
+          IMAGE_TAG=build-${{ github.run_number }}
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "Generated IMAGE_TAG: $IMAGE_TAG"
+
       - name: Build Docker Image
-        run: docker build -t ci-cd-demo .
+        run: docker build -t ci-cd-demo:${IMAGE_TAG} .
 
       - name: Save Docker Image
-        run: docker save ci-cd-demo > ci-cd-demo.tar
+        run: docker save ci-cd-demo:${IMAGE_TAG} > ci-cd-demo.tar
 
-      - name: Upload Artifact
+      - name: Save Image Tag
+        run: echo "${IMAGE_TAG}" > image_tag.txt
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
-          path: ci-cd-demo.tar
+          name: docker-artifacts
+          path: |
+            ci-cd-demo.tar
+            image_tag.txt
+
+      - name: Trigger Jenkins CD Pipeline
+        run: |
+          curl -X POST "http://localhost:8080/job/cd-pipeline/buildWithParameters" \
+          --user "jenkins-user:${{ secrets.JENKINS_API_TOKEN }}" \
+          --data token=${{ secrets.JENKINS_JOB_TOKEN }} \
+          --data IMAGE_TAG=build-${{ github.run_number }}
