@@ -38,7 +38,9 @@ jobs:
         run: mypy src/
 
       - name: Run Unit Tests
-        run: pytest -q
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          pytest -q
 
       - name: Build Docker Image
         run: docker build -t ci-cd-demo .
