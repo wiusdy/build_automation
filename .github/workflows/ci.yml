@@ -22,9 +22,8 @@ jobs:
           pip install -r requirements.txt
           pip install pre-commit
 
-      - name: Run pre-commit hooks
-        run: |
-          pre-commit run --all-files
+      - name: Run pre-commit
+        run: pre-commit run --all-files --hook-stage manual --show-diff-on-failure
 
       - name: Run Flake8
         run: flake8 .
