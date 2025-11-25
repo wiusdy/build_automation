@@ -1,0 +1,35 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install deps
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run tests
+      run: pytest
+
+    - name: Build Docker image
+      run: docker build -t ci-cd-demo .
+
+    - name: Mock push to AWS ECR
+      run: |
+        chmod +x mock_aws/aws_mock.sh
+        ./mock_aws/aws_mock.sh push ci-cd-demo:latest

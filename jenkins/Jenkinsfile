@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull artifact') {
+            steps {
+                sh '''
+                echo "[MOCK] Pulling Docker image from fake ECR..."
+                '''
+            }
+        }
+
+        stage('Deploy to ECS (mock)') {
+            steps {
+                sh '''
+                echo "[MOCK] Deploying application to ECS..."
+                echo "[MOCK] Application updated successfully!"
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "CD Pipeline completed (mock)."
+        }
+    }
+}
