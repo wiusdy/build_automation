@@ -64,10 +64,3 @@ jobs:
           path: |
             ci-cd-demo.tar
             image_tag.txt
-
-      - name: Trigger Jenkins CD Pipeline
-        run: |
-          curl -X POST "http://localhost:8080/job/cd-pipeline/buildWithParameters" \
-          --user "jenkins-user:${{ secrets.JENKINS_API_TOKEN }}" \
-          --data token=${{ secrets.JENKINS_JOB_TOKEN }} \
-          --data IMAGE_TAG=build-${{ github.run_number }}
