@@ -46,6 +46,7 @@ jobs:
         run: |
           IMAGE_TAG=build-${{ github.run_number }}
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "$IMAGE_TAG" > image_tag.txt
           echo "Generated IMAGE_TAG: $IMAGE_TAG"
 
       - name: Build Docker Image
@@ -53,9 +54,6 @@ jobs:
 
       - name: Save Docker Image
         run: docker save ci-cd-demo:${IMAGE_TAG} > ci-cd-demo.tar
-
-      - name: Save Image Tag
-        run: echo "${IMAGE_TAG}" > image_tag.txt
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
